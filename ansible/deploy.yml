@@ -1,0 +1,23 @@
+---
+- name: Deploy SRE Technical Test Stack
+  hosts: production
+
+  tasks:
+    - name: Pull latest Docker images
+      ansible.builtin.command:
+        cmd: docker compose pull
+        chdir: /home/vibe-bt/sre-test
+
+    - name: Force recreate Docker Compose services
+      ansible.builtin.command:
+        cmd: docker compose up -d --force-recreate
+        chdir: /home/vibe-bt/sre-test
+
+    - name: Check running containers
+      ansible.builtin.command:
+        cmd: docker ps
+      register: docker_ps_output
+
+    - name: Show running containers
+      ansible.builtin.debug:
+        var: docker_ps_output.stdout_lines
