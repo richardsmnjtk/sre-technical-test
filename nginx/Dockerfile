@@ -12,6 +12,8 @@ RUN mkdir -p /var/www/html \
     /var/cache/nginx \
     /usr/local/openresty/nginx/logs
 
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+
 USER appuser
 
 EXPOSE 8080
