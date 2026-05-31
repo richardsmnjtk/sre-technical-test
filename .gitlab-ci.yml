@@ -1,0 +1,46 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  APP_IMAGE: "$DOCKERHUB_USERNAME/sre-test-app"
+  NGINX_IMAGE: "$DOCKERHUB_USERNAME/sre-test-nginx"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+  DOCKER_TLS_CERTDIR: "/certs"
+
+build:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  before_script:
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - docker build -t "$APP_IMAGE:$IMAGE_TAG" -t "$APP_IMAGE:latest" -f php/Dockerfile .
+    - docker build -t "$NGINX_IMAGE:$IMAGE_TAG" -t "$NGINX_IMAGE:latest" -f nginx/Dockerfile .
+    - docker push "$APP_IMAGE:$IMAGE_TAG"
+    - docker push "$APP_IMAGE:latest"
+    - docker push "$NGINX_IMAGE:$IMAGE_TAG"
+    - docker push "$NGINX_IMAGE:latest"
+  rules:
+    - changes:
+        - php/Dockerfile
+        - nginx/Dockerfile
+
+deploy:
+  stage: deploy
+  image: python:3.12-alpine
+  before_script:
+    - apk add --no-cache openssh-client
+    - pip install --no-cache-dir ansible
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - cp "$SSH_PRIVATE_KEY" ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    - ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+  rules:
+    - changes:
+        - php/Dockerfile
+        - nginx/Dockerfile
+        - docker-compose.yml

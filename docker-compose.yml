@@ -1,10 +1,10 @@
 services:
   app:
-    image: richardsmnjtk/sre-test-app:v1.3.0
+    image: richardsmnjtk/sre-test-app:latest
     container_name: php-app
 
   nginx:
-    image: richardsmnjtk/sre-test-nginx:v1.4.1
+    image: richardsmnjtk/sre-test-nginx:latest
     container_name: nginx
     ports:
       - "8080:8080"
