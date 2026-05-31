@@ -17,3 +17,5 @@ COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 USER appuser
 
 EXPOSE 8080
+
+# build trigger test
