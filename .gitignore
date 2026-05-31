@@ -1,2 +1,7 @@
 .env
 *.log
+token
+*.bak
+test-ci.sh
+app/test.php
+.gitlab-ci.yml.bak2
